@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "cross-env NODE_ENV=development nodemon src/server.js",
-    "build": "babel src --out-dir dist",
+    "build": "npm i && babel src --out-dir dist",
     "test": "jest --setupFilesAfterEnv=src/tests/jest.setup.js --detectOpenHandles"
   },
   "keywords": [],
