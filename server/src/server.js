@@ -4,7 +4,9 @@ const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 const { User, Image, MapData } = require('./models');
+const cors = require("cors");
 
 dotenv.config();
 
@@ -12,40 +14,45 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware
+app.use(cors())
 app.use(express.json());
-app.use('/uploads', express.static('uploads')); // Serve static files from the uploads directory
+app.use('/uploads', express.static('uploads'));
 
 // Configure multer to save files to 'uploads' directory with the specified name
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads'); // Directory where the file will be saved
+        const uniqueDir = `uploads/`;
+        cb(null, uniqueDir);
     },
     filename: (req, file, cb) => {
-        cb(null, file.originalname); // Use the specified filename
+        const uniqueSuffix = `${Date.now()}-${file.originalname}`;
+        cb(null, uniqueSuffix);
     }
 });
 
 const upload = multer({ storage: storage });
 
 // Connect to MongoDB
-mongoose.connect(process.env.DATABASE_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+mongoose.connect(process.env.DATABASE_URL)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware for JWT Authentication
 const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
-    if (!token) return res.sendStatus(401);
+    if (!token) {
+        return res.status(401).json({ error: 'Invalid Token' });
+    }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
+        if (err) {
+            return res.status(403).json({ error: 'User not Authorized' });
+        }
         req.user = user;
         next();
     });
 };
+
 
 // User Signup
 app.post('/signup', async (req, res) => {
@@ -74,7 +81,7 @@ app.post('/login', async (req, res) => {
     res.json({ token });
 });
 
-// Combined Upload Image and Save Map Data
+// Upload Image and Save Map Data
 app.post('/save', authenticateToken, upload.single('image'), async (req, res) => {
     try {
         const { northBound, southBound, eastBound, westBound } = req.body;
@@ -86,14 +93,14 @@ app.post('/save', authenticateToken, upload.single('image'), async (req, res) =>
         }
 
         // Construct image URL
-        const imageUrl = `/uploads/${imageFile.filename}`;
+        const imageUrl = `/uploads/${path.basename(imageFile.path)}`;
 
         // Save the image in the database
         const image = new Image({
             imageUrl: imageUrl,
             userId: req.user.id,
         });
-        await image.save();
+        const savedImage = await image.save();
 
         // Save map data with reference to the image ID
         const mapData = new MapData({
@@ -101,12 +108,13 @@ app.post('/save', authenticateToken, upload.single('image'), async (req, res) =>
             southBound,
             eastBound,
             westBound,
+            imageId: savedImage._id,
             userId: req.user.id,
-            image: image._id, // Reference the image ID
         });
-        await mapData.save();
 
-        res.status(201).json({ message: 'Map data and image saved successfully', mapData });
+        const savedMapData = await mapData.save();
+
+        res.status(201).json({ message: 'Map data and image saved successfully', savedMapData });
     } catch (error) {
         console.error('Error saving map data and image:', error);
         res.status(500).json({ error: 'Failed to save data' });
@@ -116,20 +124,38 @@ app.post('/save', authenticateToken, upload.single('image'), async (req, res) =>
 // Retrieve Maps for User
 app.get('/maps', authenticateToken, async (req, res) => {
     try {
-        const maps = await MapData.find({ userId: req.user.id });
+        mongoose.set('strictPopulate', false);
 
-        console.log('Maps before populating:', maps); // Log the maps before populating
+        const maps = await MapData.find({ userId: req.user.id }).populate('imageId');
 
-        const populatedMaps = await MapData.populate(maps, { path: 'image' }); // Populate images
-
-        console.log('Populated Maps:', populatedMaps); // Log the populated maps
-
-        res.status(200).json(populatedMaps);
+        res.status(200).json(maps);
     } catch (error) {
         console.error('Error retrieving maps:', error);
         res.status(500).json({ error: 'Failed to retrieve maps' });
     }
 });
+
+// Retrieve Individual Map Data by ID
+app.get('/maps/:map_id', authenticateToken, async (req, res) => {
+    try {
+        mongoose.set('strictPopulate', false);
+
+        // Fetch the map data by ID and populate the imageId field
+        const mapData = await MapData.findById(req.params.map_id).populate('imageId');
+
+
+        // Check if map data exists
+        if (!mapData) {
+            return res.status(404).json({ error: 'Map data not found' });
+        }
+
+        res.status(200).json(mapData);
+    } catch (error) {
+        console.error('Error retrieving map data:', error);
+        res.status(500).json({ error: 'Failed to retrieve map data' });
+    }
+});
+
 
 // Start the server
 app.listen(PORT, () => {

@@ -1,8 +1,7 @@
-// tests/server.test.js
 const request = require("supertest");
 const mongoose = require("mongoose");
-const app = require("../src/server");
-const { User, Image, MapData } = require("../src/models");
+const app = require("../server");
+const { User, Image, MapData } = require("../models");
 const jwt = require("jsonwebtoken");
 
 const userData = {
@@ -10,7 +9,7 @@ const userData = {
     password: 'password123',
 };
 
-let authToken;
+let token;
 
 beforeAll(async () => {
     // Connect to the test database
@@ -46,7 +45,7 @@ describe("API Endpoints", () => {
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('token');
-            authToken = response.body.token; // Save the token for subsequent requests
+            token = response.body.token; // Save the token for subsequent requests
         });
     });
 
@@ -54,7 +53,7 @@ describe("API Endpoints", () => {
         it('should save map data and image for the user', async () => {
             const response = await request(app)
                 .post('/save')
-                .set('Authorization', `Bearer ${authToken}`)
+                .set('Authorization', `Bearer ${token}`)
                 .field('northBound', 24.6789)
                 .field('southBound', 23.7890)
                 .field('eastBound', 54.1234)
@@ -68,7 +67,7 @@ describe("API Endpoints", () => {
         it('should return 400 if required fields are missing', async () => {
             const response = await request(app)
                 .post("/save")
-                .set('Authorization', `Bearer ${authToken}`)
+                .set('Authorization', `Bearer ${token}`)
                 .attach("image", 'uploads/test-image.png'); // Only attach image
 
             expect(response.status).toBe(400);
@@ -79,7 +78,7 @@ describe("API Endpoints", () => {
         it('should retrieve all maps for the user', async () => {
             const response = await request(app)
                 .get('/maps')
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `Bearer ${token}`);
 
             expect(response.status).toBe(200);
             expect(Array.isArray(response.body)).toBe(true);

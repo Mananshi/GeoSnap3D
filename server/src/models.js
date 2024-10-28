@@ -33,7 +33,7 @@ const MapDataSchema = new mongoose.Schema({
     southBound: { type: Number, required: true },
     eastBound: { type: Number, required: true },
     westBound: { type: Number, required: true },
-    image: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', unique: true },
+    imageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 }, {
     timestamps: true, // Automatically add createdAt and updatedAt fields
