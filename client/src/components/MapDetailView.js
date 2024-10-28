@@ -9,7 +9,7 @@ const MapDetailView = () => {
     const token = localStorage.getItem("token");
 
     useEffect(() => {
-        fetch(`http://localhost:4000/maps/${id}`, {
+        fetch(`https://geosnap3d.onrender.com/maps/${id}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -28,9 +28,9 @@ const MapDetailView = () => {
         <div className="App">
             <h1>Map Details</h1>
             <div className="map-detail-view">
-                <img src={`http://localhost:4000${mapData.imageId.imageUrl}`} alt="Map" className="map-full" />
+                <img src={`https://geosnap3d.onrender.com${mapData.imageId.imageUrl}`} alt="Map" className="map-full" />
                 <h3>3D Preview</h3>
-                <BabylonScene textureUrl={`http://localhost:4000${mapData.imageId.imageUrl}`} />
+                <BabylonScene textureUrl={`https://geosnap3d.onrender.com${mapData.imageId.imageUrl}`} />
                 <h4>Coordinates</h4>
                 <table className="bounds-table">
                     <thead>

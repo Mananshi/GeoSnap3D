@@ -18,7 +18,7 @@ const HomePage = () => {
     }, [history]);
 
     const fetchMaps = () => {
-        fetch("http://localhost:4000/maps", {
+        fetch(`https://geosnap3d.onrender.com/maps`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -50,7 +50,7 @@ const HomePage = () => {
                 {maps.map((mapData, index) => (
                     <div key={index} className="map-item">
                         <Link to={`/maps/${mapData._id}`}>
-                            <img src={`http://localhost:4000${mapData.imageId.imageUrl}`} alt="Saved map preview" className="map-thumbnail" />
+                            <img src={`https://geosnap3d.onrender.com${mapData.imageId.imageUrl}`} alt="Saved map preview" className="map-thumbnail" />
                             <p>Map {index + 1}</p>
                         </Link>
                     </div>

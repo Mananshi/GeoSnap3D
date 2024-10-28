@@ -11,7 +11,7 @@ const Signup = () => {
         e.preventDefault();
         const signupData = { email, password };
 
-        fetch("http://localhost:4000/signup", {
+        fetch(`https://geosnap3d.onrender.com/signup`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(signupData),
