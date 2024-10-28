@@ -6,12 +6,13 @@ import '../App.css';
 const MapDetailView = () => {
     const { id } = useParams();
     const [mapData, setMapData] = useState(null);
+    const token = localStorage.getItem("token");
 
     useEffect(() => {
         fetch(`http://localhost:4000/maps/${id}`, {
             method: "GET",
             headers: {
-                "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MWU1ZGE0ZmFjNTM4MTVkODVhZTIwYyIsImlhdCI6MTczMDExNjYyMSwiZXhwIjoxNzMwMjAzMDIxfQ.gNgHYVsKTNx1FtTBRBPBZ7KqHDaJCg0QJNoB1aUsIIk`,
+                "Authorization": `Bearer ${token}`,
             },
         })
             .then(response => response.json())
