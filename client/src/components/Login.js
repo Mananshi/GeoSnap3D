@@ -9,7 +9,7 @@ const Login = ({ onLogin }) => {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        fetch(`http://localhost:4000/login`, {
+        fetch(`https://geosnap3d.onrender.com/login`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),

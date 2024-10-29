@@ -22,7 +22,7 @@ const HomePage = ({ onLogout }) => {
     }, [isLoggedIn]);
 
     const fetchMaps = () => {
-        fetch(`http://localhost:4000/maps`, {
+        fetch(`https://geosnap3d.onrender.com/maps`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -37,14 +37,14 @@ const HomePage = ({ onLogout }) => {
     };
 
     const fetchTopRegions = () => {
-        fetch('http://localhost:4000/maps/top-regions')
+        fetch('https://geosnap3d.onrender.com/maps/top-regions')
             .then(response => response.json())
             .then(data => setTopRegions(data))
             .catch(error => console.error("Error fetching top regions:", error));
     };
 
     const fetchUserTopRegions = () => {
-        fetch('http://localhost:4000/maps/top-regions', {
+        fetch('https://geosnap3d.onrender.com/maps/top-regions', {
             headers: {
                 "Authorization": `Bearer ${token}`,
             }
@@ -87,7 +87,7 @@ const HomePage = ({ onLogout }) => {
                             {maps.map((mapData, index) => (
                                 <div key={index} className="map-item">
                                     <Link to={`/maps/${mapData._id}`}>
-                                        <img src={`http://localhost:4000${mapData.imageId.imageUrl}`} alt="Saved map preview" className="map-thumbnail" />
+                                        <img src={`https://geosnap3d.onrender.com${mapData.imageId.imageUrl}`} alt="Saved map preview" className="map-thumbnail" />
                                         <p>Map {index + 1}</p>
                                     </Link>
                                 </div>
