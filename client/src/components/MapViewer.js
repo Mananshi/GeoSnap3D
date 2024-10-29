@@ -69,7 +69,7 @@ const MapViewer = ({ onLocationSaved, topRegions, isLoggedIn, onRedirectToLogin 
                         formData.append("longitude", center.lng.toFixed(4));
                         formData.append("image", blob, "map-location.png");
 
-                        fetch(`https://geosnap3d.onrender.com/save`, {
+                        fetch(`https://geosnap3d.onrender.com/maps/save`, {
                             method: "POST",
                             body: formData,
                             headers: {
@@ -127,11 +127,11 @@ const MapViewer = ({ onLocationSaved, topRegions, isLoggedIn, onRedirectToLogin 
                                 <td>{bounds.west.toFixed(4)}</td>
                             </tr>
                             <tr>
-                                <td>Latitude</td>
+                                <td>Center Latitude</td>
                                 <td>{center.lat.toFixed(4)}</td>
                             </tr>
                             <tr>
-                                <td>Longitude</td>
+                                <td>Center Longitude</td>
                                 <td>{center.lng.toFixed(4)}</td>
                             </tr>
                         </tbody>
