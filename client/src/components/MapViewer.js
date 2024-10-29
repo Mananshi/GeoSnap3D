@@ -22,11 +22,17 @@ const MapViewer = ({ onLocationSaved }) => {
         useEffect(() => {
             const updateBounds = () => {
                 const currentBounds = map.getBounds();
+                const currentCenter = map.getCenter();
                 setBounds({
                     north: currentBounds.getNorth(),
                     south: currentBounds.getSouth(),
                     east: currentBounds.getEast(),
                     west: currentBounds.getWest(),
+                });
+
+                setCenter({
+                    lat: currentCenter.lat,
+                    lng: currentCenter.lng,
                 });
             };
 
@@ -54,6 +60,8 @@ const MapViewer = ({ onLocationSaved }) => {
                         formData.append("southBound", bounds.south.toFixed(4));
                         formData.append("eastBound", bounds.east.toFixed(4));
                         formData.append("westBound", bounds.west.toFixed(4));
+                        formData.append("latitude", center.lat.toFixed(4));
+                        formData.append("longitude", center.lng.toFixed(4));
                         formData.append("image", blob, "map-location.png");
 
                         fetch(`https://geosnap3d.onrender.com/save`, {
@@ -91,26 +99,34 @@ const MapViewer = ({ onLocationSaved }) => {
                     <table className="bounds-table">
                         <thead>
                             <tr>
-                                <th>Boundary</th>
-                                <th>Latitude / Longitude</th>
+                                <th>Property</th>
+                                <th>Value</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>North</td>
+                                <td>North Bound</td>
                                 <td>{bounds.north.toFixed(4)}</td>
                             </tr>
                             <tr>
-                                <td>South</td>
+                                <td>South Bound</td>
                                 <td>{bounds.south.toFixed(4)}</td>
                             </tr>
                             <tr>
-                                <td>East</td>
+                                <td>East Bound</td>
                                 <td>{bounds.east.toFixed(4)}</td>
                             </tr>
                             <tr>
-                                <td>West</td>
+                                <td>West Bound</td>
                                 <td>{bounds.west.toFixed(4)}</td>
+                            </tr>
+                            <tr>
+                                <td>Latitude</td>
+                                <td>{center.lat.toFixed(4)}</td>
+                            </tr>
+                            <tr>
+                                <td>Longitude</td>
+                                <td>{center.lng.toFixed(4)}</td>
                             </tr>
                         </tbody>
                     </table>

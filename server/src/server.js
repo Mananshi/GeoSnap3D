@@ -4,14 +4,24 @@ const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 const { User, Image, MapData } = require('./models');
 const cors = require("cors");
+const axios = require('axios');
+const redis = require('redis');
+
 
 dotenv.config();
 
+const client = redis.createClient({
+    url: process.env.REDIS_URL,
+});
+client.connect();
+
+client.on('error', (err) => console.error('Redis Client Error', err));
+
 const app = express();
 const PORT = process.env.PORT || 4000;
+const CACHE_DURATION = 600; //10 mins
 
 // Middleware
 app.use(cors())
@@ -84,11 +94,11 @@ app.post('/login', async (req, res) => {
 // Upload Image and Save Map Data
 app.post('/save', authenticateToken, upload.single('image'), async (req, res) => {
     try {
-        const { northBound, southBound, eastBound, westBound } = req.body;
+        const { northBound, southBound, eastBound, westBound, latitude, longitude } = req.body;
         const imageFile = req.file;
 
         // Check for required fields
-        if (!northBound || !southBound || !eastBound || !westBound || !imageFile) {
+        if (!northBound || !southBound || !eastBound || !westBound || !imageFile || !latitude || !longitude) {
             return res.status(400).json({ error: 'All map data fields and image are required' });
         }
 
@@ -102,17 +112,28 @@ app.post('/save', authenticateToken, upload.single('image'), async (req, res) =>
         });
         const savedImage = await image.save();
 
+        // Get the region name from an external geocoding API
+        const mapMetaData = await axios.get(`${process.env.GEO_CODING_API}?q=${latitude}+${longitude}&key=${process.env.GEO_CODING_KEY}&address_only=1`);
+        const region = mapMetaData.data['results'][0]['components']['suburb'];
+
         // Save map data with reference to the image ID
         const mapData = new MapData({
             northBound,
             southBound,
             eastBound,
             westBound,
+            latitude,
+            longitude,
+            region,
             imageId: savedImage._id,
             userId: req.user.id,
         });
 
         const savedMapData = await mapData.save();
+
+        // Invalidate system-level and user-level caches
+        await client.del('topRegions'); // Invalidate system-wide top regions
+        await client.del(`topRegions:${req.user.id}`); // Invalidate user-specific top regions
 
         res.status(201).json({ message: 'Map data and image saved successfully', savedMapData });
     } catch (error) {
@@ -120,6 +141,7 @@ app.post('/save', authenticateToken, upload.single('image'), async (req, res) =>
         res.status(500).json({ error: 'Failed to save data' });
     }
 });
+
 
 // Retrieve Maps for User
 app.get('/maps', authenticateToken, async (req, res) => {
@@ -134,6 +156,45 @@ app.get('/maps', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Failed to retrieve maps' });
     }
 });
+
+// Retrieve most accessed regions
+app.get('/maps/top-regions', authenticateToken, async (req, res) => {
+    const { userId } = req.query; // Get user ID from query parameter if available
+    const cacheKey = userId ? `topRegions:${userId}` : 'topRegions';
+
+    try {
+        // Check if data is cached
+        const cachedData = await client.get(cacheKey);
+        if (cachedData) {
+            console.log('Serving from cache');
+            return res.status(200).json(JSON.parse(cachedData));
+        }
+
+        // MongoDB aggregation to fetch top 3 regions (user-specific if userId is present)
+        const matchStage = userId ? { userId: mongoose.Types.ObjectId(userId) } : {};
+        const topRegions = await MapData.aggregate([
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: "$region",
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { count: -1 } },
+            { $limit: 3 },
+        ]);
+
+        // Cache the result
+        await client.setEx(cacheKey, CACHE_DURATION, JSON.stringify(topRegions));
+        console.log('Cache updated');
+
+        res.status(200).json(topRegions);
+    } catch (error) {
+        console.error('Error fetching top regions:', error);
+        res.status(500).json({ error: 'Failed to fetch top regions' });
+    }
+});
+
 
 // Retrieve Individual Map Data by ID
 app.get('/maps/:map_id', authenticateToken, async (req, res) => {
