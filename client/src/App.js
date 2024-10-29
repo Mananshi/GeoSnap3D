@@ -37,7 +37,7 @@ function App() {
 
         <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
           <Route path="/maps" element={<MapListView />} />
-          <Route path="/maps/:mapId" element={<MapDetailView />} />
+          <Route path="/maps/:id" element={<MapDetailView />} />
         </Route>
       </Routes>
     </Router>
