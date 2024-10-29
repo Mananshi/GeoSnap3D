@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../App.css';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = (e) => {
         e.preventDefault();
-        fetch(`https://geosnap3d.onrender.com/login`, {
+        fetch(`http://localhost:4000/login`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -17,7 +17,7 @@ const Login = () => {
             .then(response => response.json())
             .then(data => {
                 if (data.token) {
-                    localStorage.setItem("token", data.token);
+                    onLogin(data.token);
                     navigate("/"); // Redirect to home page after successful login
                 } else {
                     alert("Invalid credentials");

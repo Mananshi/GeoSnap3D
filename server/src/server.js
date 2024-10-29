@@ -114,7 +114,9 @@ app.post('/save', authenticateToken, upload.single('image'), async (req, res) =>
 
         // Get the region name from an external geocoding API
         const mapMetaData = await axios.get(`${process.env.GEO_CODING_API}?q=${latitude}+${longitude}&key=${process.env.GEO_CODING_KEY}&address_only=1`);
-        const region = mapMetaData.data['results'][0]['components']['suburb'];
+
+
+        const region = mapMetaData.data['results'][0]['components']['suburb'] ?? mapMetaData.data['results'][0]['components']['town'] ?? mapMetaData.data['results'][0]['components']['city'] ?? mapMetaData.data['results'][0]['components']['state'];
 
         // Save map data with reference to the image ID
         const mapData = new MapData({
@@ -157,9 +159,23 @@ app.get('/maps', authenticateToken, async (req, res) => {
     }
 });
 
+
 // Retrieve most accessed regions
-app.get('/maps/top-regions', authenticateToken, async (req, res) => {
-    const { userId } = req.query; // Get user ID from query parameter if available
+app.get('/maps/top-regions', async (req, res) => {
+    // Check if token is present and valid
+    let userId = null;
+    try {
+        const authHeader = req.headers['authorization'];
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            userId = decoded.id;
+        }
+    } catch (error) {
+        console.log("No valid auth token provided; fetching top regions across all users.");
+    }
+
+    // Set cache key based on presence of userId
     const cacheKey = userId ? `topRegions:${userId}` : 'topRegions';
 
     try {
@@ -170,8 +186,7 @@ app.get('/maps/top-regions', authenticateToken, async (req, res) => {
             return res.status(200).json(JSON.parse(cachedData));
         }
 
-        // MongoDB aggregation to fetch top 3 regions (user-specific if userId is present)
-        const matchStage = userId ? { userId: mongoose.Types.ObjectId(userId) } : {};
+        const matchStage = userId ? { userId: new mongoose.Types.ObjectId(userId) } : {};
         const topRegions = await MapData.aggregate([
             { $match: matchStage },
             {
@@ -194,7 +209,6 @@ app.get('/maps/top-regions', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch top regions' });
     }
 });
-
 
 // Retrieve Individual Map Data by ID
 app.get('/maps/:map_id', authenticateToken, async (req, res) => {

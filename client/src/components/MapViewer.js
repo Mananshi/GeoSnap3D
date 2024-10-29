@@ -6,7 +6,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import osmProvider from "../utils/MapUtil";
 import BabylonScene from './BabylonScene';
 
-const MapViewer = ({ onLocationSaved }) => {
+const MapViewer = ({ onLocationSaved, topRegions, isLoggedIn, onRedirectToLogin }) => {
     const [center, setCenter] = useState({ lat: 23.0225, lng: 72.5714 });
     const ZOOM_LEVEL = 12;
     const mapRef = useRef(null);
@@ -48,6 +48,11 @@ const MapViewer = ({ onLocationSaved }) => {
     };
 
     const handleSaveLocation = () => {
+        if (!isLoggedIn) {
+            onRedirectToLogin();
+            return;
+        }
+
         if (mapContainerRef.current && bounds) {
             html2canvas(mapContainerRef.current, { useCORS: true }).then((canvas) => {
                 canvas.toBlob((blob) => {
@@ -64,7 +69,7 @@ const MapViewer = ({ onLocationSaved }) => {
                         formData.append("longitude", center.lng.toFixed(4));
                         formData.append("image", blob, "map-location.png");
 
-                        fetch(`https://geosnap3d.onrender.com/save`, {
+                        fetch(`http://localhost:4000/save`, {
                             method: "POST",
                             body: formData,
                             headers: {
@@ -87,12 +92,13 @@ const MapViewer = ({ onLocationSaved }) => {
 
     return (
         <div>
-            <div ref={mapContainerRef} style={{ height: "500px", width: "100%" }}>
+            <div ref={mapContainerRef} style={{ height: "500px", width: "80%" }}>
                 <MapContainer center={center} zoom={ZOOM_LEVEL} ref={mapRef} style={{ height: "500px", width: "100%" }} >
                     <TileLayer url={osmProvider.maptiler.url} attribution={osmProvider.maptiler.attribution} />
                     <MapBoundsTracker />
                 </MapContainer>
             </div>
+            <button onClick={handleSaveLocation} style={{ marginTop: "10px", marginBottom: "10px" }}>Save Location</button>
             {bounds && (
                 <div style={{ marginTop: "10px" }}>
                     <h4>Coordinates</h4>
@@ -132,7 +138,7 @@ const MapViewer = ({ onLocationSaved }) => {
                     </table>
                 </div>
             )}
-            <button onClick={handleSaveLocation} style={{ marginTop: "10px", marginBottom: "10px" }}>Save Location</button>
+
             {texture && <BabylonScene textureUrl={texture} />}
         </div>
     );

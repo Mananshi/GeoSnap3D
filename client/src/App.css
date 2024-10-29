@@ -14,6 +14,36 @@ h4 {
   margin: 10px 0;
 }
 
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+}
+
+.logout-button {
+  padding: 8px 12px;
+  color: #333;
+  background-color: #f8f8f8;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #e8e8e8;
+}
+
+.footer {
+  margin-top: 20px;
+  padding: 10px;
+  text-align: center;
+  background-color: #333;
+  color: #fff;
+}
+
+
 .saved-maps {
   display: flex;
   flex-wrap: nowrap;
@@ -179,7 +209,7 @@ h4 {
 
 .auth-button {
   padding: 0.75rem;
-  background-color: #007bff;
+  background-color: #4CAF50;
   color: #fff;
   font-size: 1rem;
   border: none;
@@ -189,7 +219,7 @@ h4 {
 }
 
 .auth-button:hover {
-  background-color: #0056b3;
+  background-color: #4CAF50;
 }
 
 .auth-cta {
@@ -199,7 +229,7 @@ h4 {
 }
 
 .auth-link {
-  color: #007bff;
+  color: #4CAF50;
   text-decoration: none;
 }
 

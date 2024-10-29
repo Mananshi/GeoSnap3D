@@ -16,14 +16,26 @@ function App() {
     setIsAuthenticated(!!token);
   }, []);
 
+  const handleLogin = (token) => {
+    localStorage.setItem('token', token);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    alert("You are now logged out!")
+  };
+
+
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<HomePage onLogout={handleLogout} />} />
 
         <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
-          <Route path="/" element={<HomePage />} />
           <Route path="/maps" element={<MapListView />} />
           <Route path="/maps/:mapId" element={<MapDetailView />} />
         </Route>
