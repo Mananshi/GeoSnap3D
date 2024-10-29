@@ -17,7 +17,7 @@ const BabylonScene = ({ textureUrl }) => {
         new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 
         // Create a box (cuboid)
-        const box = MeshBuilder.CreateBox("box", { height: 2, width: 2, depth: 2 }, scene);
+        const box = MeshBuilder.CreateBox("box", { height: 2.5, width: 2.5, depth: 2.5 }, scene);
 
         // Create a texture and apply it to the box
         if (textureUrl) {
@@ -25,6 +25,8 @@ const BabylonScene = ({ textureUrl }) => {
             material.diffuseTexture = new Texture(textureUrl, scene);
             box.material = material;
         }
+
+        box.material.roughness = 0.5;
 
         engine.runRenderLoop(() => {
             scene.render();
@@ -35,7 +37,7 @@ const BabylonScene = ({ textureUrl }) => {
         };
     }, [textureUrl]);
 
-    return <canvas ref={canvasRef} style={{ width: "100%", height: "500px" }} />;
+    return <canvas ref={canvasRef} style={{ width: "80%", height: "400px" }} />;
 };
 
 export default BabylonScene;
