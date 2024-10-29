@@ -127,11 +127,11 @@ const MapViewer = ({ onLocationSaved, topRegions, isLoggedIn, onRedirectToLogin 
                                 <td>{bounds.west.toFixed(4)}</td>
                             </tr>
                             <tr>
-                                <td>Latitude</td>
+                                <td>Center Latitude</td>
                                 <td>{center.lat.toFixed(4)}</td>
                             </tr>
                             <tr>
-                                <td>Longitude</td>
+                                <td>Center Longitude</td>
                                 <td>{center.lng.toFixed(4)}</td>
                             </tr>
                         </tbody>

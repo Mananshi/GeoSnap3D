@@ -35,26 +35,34 @@ const MapDetailView = () => {
                 <table className="bounds-table">
                     <thead>
                         <tr>
-                            <th>Boundary</th>
-                            <th>Latitude / Longitude</th>
+                            <th>Property</th>
+                            <th>Value</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>North</td>
+                            <td>North Bound</td>
                             <td>{mapData.northBound}</td>
                         </tr>
                         <tr>
-                            <td>South</td>
+                            <td>South Bound</td>
                             <td>{mapData.southBound}</td>
                         </tr>
                         <tr>
-                            <td>East</td>
+                            <td>East Bound</td>
                             <td>{mapData.eastBound}</td>
                         </tr>
                         <tr>
-                            <td>West</td>
+                            <td>West Bound</td>
                             <td>{mapData.westBound}</td>
+                        </tr>
+                        <tr>
+                            <td>Center Latitude</td>
+                            <td>{mapData.latitude}</td>
+                        </tr>
+                        <tr>
+                            <td>Center Longitude</td>
+                            <td>{mapData.longitude}</td>
                         </tr>
                     </tbody>
                 </table>
